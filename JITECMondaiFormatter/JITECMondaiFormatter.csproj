@@ -5,4 +5,10 @@
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="PDFium.WindowsV2" Version="1.0.2" />
+    <PackageReference Include="PDFiumSharpV2" Version="1.0.1" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="2.0.0" />
+  </ItemGroup>
+
 </Project>
