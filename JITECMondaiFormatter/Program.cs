@@ -1,4 +1,5 @@
-﻿using PDFiumSharp;
+﻿using Newtonsoft.Json;
+using PDFiumSharp;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
@@ -6,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Globalization;
 using Windows.Graphics.Imaging;
@@ -26,42 +28,107 @@ namespace JITECMondaiFormatter
                     @"")
             });
 
-            await ReadPdfAsync(input.Items.First().QuestionFilePath);
+            var questions = await ReadQuestion(input.Items.First().QuestionFilePath);
+
+            var output = new OutputItem(questions);
+            await File.WriteAllTextAsync("mondai.json", JsonConvert.SerializeObject(output));
         }
 
-        public static async Task ReadPdfAsync(string filename)
+        public static async Task<IEnumerable<Question>> ReadQuestion(string filename)
         {
             var enc = new PngEncoder();
             var ocr = OcrEngine.TryCreateFromLanguage(new Language("ja"));
 
             using var doc = new PdfDocument(filename);
             var pageNumber = 0;
+            var qNo = 0;
+            var qList = new List<Question>();
             foreach (var page in doc.Pages)
             {
                 pageNumber++;
 
-                var width = 1024;
+                var width = 1280;
                 var height = (int)(width * page.Height / page.Width);
 
                 using var pageBitmap = new PDFiumBitmap(width, height, true);
-
                 page.Render(pageBitmap);
 
-                var imagePath = $"p{pageNumber.ToString("000")}.png";
-                var textPath = $"p{pageNumber.ToString("000")}.txt";
-                var image = Image.Load(pageBitmap.AsBmpStream());
+                var pageImagePath = $"p{pageNumber.ToString("000")}.png";
+                var pageTextPath = $"p{pageNumber.ToString("000")}.txt";
 
+                using var pageImage = Image.Load(pageBitmap.AsBmpStream());
                 // Set the background to white, otherwise it's black. https://github.com/SixLabors/ImageSharp/issues/355#issuecomment-333133991
-                image.Mutate(x => x.BackgroundColor(Color.White));
+                pageImage.Mutate(x => x.BackgroundColor(Color.White));
+                await pageImage.SaveAsync(pageImagePath, enc);
 
-                image.Save(imagePath, enc);
-
+                // OCR
                 using var bmpStream = new InMemoryRandomAccessStream();
-                image.Save(bmpStream.AsStream(), enc);
+                await pageImage.SaveAsync(bmpStream.AsStream(), enc);
                 var bmpDec = await BitmapDecoder.CreateAsync(bmpStream);
                 var ocrRes = await ocr.RecognizeAsync(await bmpDec.GetSoftwareBitmapAsync());
-                await File.WriteAllTextAsync(textPath, ocrRes.Text);
+                await File.WriteAllTextAsync(pageTextPath, ocrRes.Text);
+
+                // Detect Question
+                var qLines = new List<OcrLine>();
+                int detectedQNo = -1;
+                foreach (var ocrLine in ocrRes.Lines)
+                {
+                    // XXX テキストが斜めってるおかげで「問」より先に次の設問の本文が来てしまう
+                    var isNewQ = ocrLine.Text.StartsWith("問");
+                    if (isNewQ)
+                    {
+                        var q = await WriteQuestion(enc, qNo, detectedQNo, pageImage, qLines);
+                        if (q != null) { qList.Add(q); }
+                        qLines.Clear();
+                        int.TryParse(ocrLine.Words.Skip(1).FirstOrDefault()?.Text, out detectedQNo);
+                        // XXX 80だけ89になってしまった
+                        if (detectedQNo > 0)
+                        {
+                            qNo++;
+                        }
+                    }
+                    qLines.Add(ocrLine);
+                }
+                {
+                    var q = await WriteQuestion(enc, qNo, detectedQNo, pageImage, qLines);
+                    if (q != null) { qList.Add(q); }
+                }
             }
+
+            return qList;
+        }
+
+        private static async Task<Question> WriteQuestion(PngEncoder enc, int qNo, int detectedQNo, Image pageImage, IEnumerable<OcrLine> qLines)
+        {
+            if (!qLines.Any() || detectedQNo < 1)
+            {
+                return null;
+            }
+
+            var qImagePath = $"q{qNo.ToString("000")}.png";
+            var qTextPath = $"q{qNo.ToString("000")}.txt";
+
+            // ページ番号行を消し飛ばす
+            var pageNoReg = new Regex(@"^[ -~]+$");
+            var normalizedLines = qLines.Reverse().SkipWhile(x => pageNoReg.IsMatch(x.Text)).Reverse().ToList();
+
+            // XXX 幅ビミョーなので固定しておく
+            //var qLeft = (int)Math.Max(0, normalizedLines.Min(x => x.Words.Min(y => y.BoundingRect.Left)) - 8);
+            //var qRight = (int)Math.Min(pageImage.Width, normalizedLines.Max(x => x.Words.Max(y => y.BoundingRect.Left)) + 8);
+            var qLeft = (int)(pageImage.Width * 0.05);
+            var qRight = (int)(pageImage.Width * 0.95);
+            var qTop = (int)Math.Max(0, normalizedLines.Min(x => x.Words.Min(y => y.BoundingRect.Top)) - 16);
+            var qBottom = (int)Math.Min(pageImage.Height, normalizedLines.Max(x => x.Words.Max(y => y.BoundingRect.Top)) + 64);
+            using var qImage = pageImage.Clone(x => x.Crop(new Rectangle(qLeft, qTop, qRight - qLeft, qBottom - qTop)));
+            await qImage.SaveAsync(qImagePath, enc);
+
+            var qText = string.Join(Environment.NewLine, normalizedLines.Select(x => x.Text));
+            //await File.WriteAllTextAsync(qTextPath, qText);
+            // Log
+            Console.WriteLine(qText);
+
+            // XXX 回答ここで処理できるわけねーだろ
+            return new Question(qNo, qText, qImagePath, "-");
         }
     }
 }

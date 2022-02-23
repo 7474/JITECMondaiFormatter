@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="PDFium.WindowsV2" Version="1.0.2" />
     <PackageReference Include="PDFiumSharpV2" Version="1.0.1" />
     <PackageReference Include="SixLabors.ImageSharp" Version="2.0.0" />
