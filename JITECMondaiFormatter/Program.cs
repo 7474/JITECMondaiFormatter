@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using PDFiumSharp;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Bmp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
 using System;
@@ -36,7 +37,8 @@ namespace JITECMondaiFormatter
 
         public static async Task<IEnumerable<Question>> ReadQuestion(string filename)
         {
-            var enc = new PngEncoder();
+            var pngEnc = new PngEncoder();
+            var rawEnc = new BmpEncoder();
             var ocr = OcrEngine.TryCreateFromLanguage(new Language("ja"));
 
             using var doc = new PdfDocument(filename);
@@ -56,14 +58,17 @@ namespace JITECMondaiFormatter
                 var pageImagePath = $"p{pageNumber.ToString("000")}.png";
                 var pageTextPath = $"p{pageNumber.ToString("000")}.txt";
 
-                using var pageImage = Image.Load(pageBitmap.AsBmpStream());
+                using var rawPageImage = Image.Load(pageBitmap.AsBmpStream());
                 // Set the background to white, otherwise it's black. https://github.com/SixLabors/ImageSharp/issues/355#issuecomment-333133991
-                pageImage.Mutate(x => x.BackgroundColor(Color.White));
-                await pageImage.SaveAsync(pageImagePath, enc);
+                rawPageImage.Mutate(x => x.BackgroundColor(Color.White));
+                //await rawPageImage.SaveAsync(pageImagePath, pngEnc);
+
+                using var normalizedPageImage = await NormalizePageImage(ocr, rawPageImage);
+                await rawPageImage.SaveAsync(pageImagePath, pngEnc);
 
                 // OCR
                 using var bmpStream = new InMemoryRandomAccessStream();
-                await pageImage.SaveAsync(bmpStream.AsStream(), enc);
+                await normalizedPageImage.SaveAsync(bmpStream.AsStream(), pngEnc);
                 var bmpDec = await BitmapDecoder.CreateAsync(bmpStream);
                 var ocrRes = await ocr.RecognizeAsync(await bmpDec.GetSoftwareBitmapAsync());
                 await File.WriteAllTextAsync(pageTextPath, ocrRes.Text);
@@ -77,7 +82,7 @@ namespace JITECMondaiFormatter
                     var isNewQ = ocrLine.Text.StartsWith("問");
                     if (isNewQ)
                     {
-                        var q = await WriteQuestion(enc, qNo, detectedQNo, pageImage, qLines);
+                        var q = await WriteQuestion(pngEnc, qNo, detectedQNo, normalizedPageImage, qLines);
                         if (q != null) { qList.Add(q); }
                         qLines.Clear();
                         int.TryParse(ocrLine.Words.Skip(1).FirstOrDefault()?.Text, out detectedQNo);
@@ -90,12 +95,24 @@ namespace JITECMondaiFormatter
                     qLines.Add(ocrLine);
                 }
                 {
-                    var q = await WriteQuestion(enc, qNo, detectedQNo, pageImage, qLines);
+                    var q = await WriteQuestion(pngEnc, qNo, detectedQNo, normalizedPageImage, qLines);
                     if (q != null) { qList.Add(q); }
                 }
             }
 
             return qList;
+        }
+
+        private static async Task<Image> NormalizePageImage(OcrEngine ocr, Image pageImage)
+        {
+            using var normalizeStream = new InMemoryRandomAccessStream();
+            await pageImage.SaveAsBmpAsync(normalizeStream.AsStream());
+            var normalizeDec = await BitmapDecoder.CreateAsync(normalizeStream);
+            var normalizeRes = await ocr.RecognizeAsync(await normalizeDec.GetSoftwareBitmapAsync());
+            // XXX TextAngle = 0 で傾きは得られていない
+            Console.WriteLine(normalizeRes.Text);
+            Console.WriteLine(normalizeRes.TextAngle);
+            return pageImage.Clone(x => x.Rotate((float)(normalizeRes.TextAngle ?? 0d)));
         }
 
         private static async Task<Question> WriteQuestion(PngEncoder enc, int qNo, int detectedQNo, Image pageImage, IEnumerable<OcrLine> qLines)
