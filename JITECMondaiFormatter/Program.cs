@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using JITECEntity;
+using Newtonsoft.Json;
 using PDFiumSharp;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Bmp;
@@ -14,6 +15,8 @@ using Windows.Globalization;
 using Windows.Graphics.Imaging;
 using Windows.Media.Ocr;
 using Windows.Storage.Streams;
+using SixLabors.Fonts;
+using SixLabors.ImageSharp.Drawing.Processing;
 
 namespace JITECMondaiFormatter
 {
@@ -21,27 +24,45 @@ namespace JITECMondaiFormatter
     {
         static async Task Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            // TODO パラメータ化など
+            var examId = "2021r03a_ap";
+            var examPartId = "2021r03a_ap_am_qs";
+            var inputFilePath = @"C:\Users\koudenpa\source\repos\JITECMondaiFormatter\mondai\2021\2021r03a_ap_am_qs.pdf";
+            var examRefName = "令和3年度 秋期 応用情報技術者試験 午前 問題";
 
             var input = new Input(new List<InputItem> {
                 new InputItem(
-                    @"C:\Users\koudenpa\source\repos\JITECMondaiFormatter\mondai\2021\2021r03a_ap_am_qs.pdf",
-                    @"")
+                    examId,
+                    examPartId,
+                    examRefName,
+                    inputFilePath,
+                    ""
+                    )
             });
 
-            var questions = await ReadQuestion(input.Items.First().QuestionFilePath);
+            var inputeItem = input.Items.First();
+            var outputDirPath = Path.Combine(examId, examPartId);
+            Directory.CreateDirectory(outputDirPath);
 
-            var output = new OutputItem(questions);
-            await File.WriteAllTextAsync("mondai.json", JsonConvert.SerializeObject(output));
+            var questions = await ReadQuestion(
+                inputeItem,
+                outputDirPath
+                );
+
+            var output = new ExamPart(inputeItem.ExamId, inputeItem.ExamPartId, questions.ToList());
+
+            var outputFilePath = Path.Combine(examId, examPartId + ".json");
+            await File.WriteAllTextAsync(outputFilePath, JsonConvert.SerializeObject(output));
         }
 
-        public static async Task<IEnumerable<Question>> ReadQuestion(string filename)
+        public static async Task<IEnumerable<Question>> ReadQuestion(
+            InputItem inputItem, string outputDirPath)
         {
             var pngEnc = new PngEncoder();
             var rawEnc = new BmpEncoder();
             var ocr = OcrEngine.TryCreateFromLanguage(new Language("ja"));
 
-            using var doc = new PdfDocument(filename);
+            using var doc = new PdfDocument(inputItem.QuestionFilePath);
             var pageNumber = 0;
             var qNo = 0;
             var qList = new List<Question>();
@@ -82,7 +103,7 @@ namespace JITECMondaiFormatter
                     var isNewQ = ocrLine.Text.StartsWith("問");
                     if (isNewQ)
                     {
-                        var q = await WriteQuestion(pngEnc, qNo, detectedQNo, normalizedPageImage, qLines);
+                        var q = await WriteQuestion(inputItem, pngEnc, qNo, detectedQNo, normalizedPageImage, qLines, outputDirPath);
                         if (q != null) { qList.Add(q); }
                         qLines.Clear();
                         int.TryParse(ocrLine.Words.Skip(1).FirstOrDefault()?.Text, out detectedQNo);
@@ -95,7 +116,7 @@ namespace JITECMondaiFormatter
                     qLines.Add(ocrLine);
                 }
                 {
-                    var q = await WriteQuestion(pngEnc, qNo, detectedQNo, normalizedPageImage, qLines);
+                    var q = await WriteQuestion(inputItem, pngEnc, qNo, detectedQNo, normalizedPageImage, qLines, outputDirPath);
                     if (q != null) { qList.Add(q); }
                 }
             }
@@ -115,15 +136,21 @@ namespace JITECMondaiFormatter
             return pageImage.Clone(x => x.Rotate((float)(normalizeRes.TextAngle ?? 0d)));
         }
 
-        private static async Task<Question> WriteQuestion(PngEncoder enc, int qNo, int detectedQNo, Image pageImage, IEnumerable<OcrLine> qLines)
+        // TODO パラメータ化など
+        private static FontCollection collection = new();
+        private static FontFamily family = collection.Add("Font/ipaexg.ttf");
+        private static Font font = family.CreateFont(14, FontStyle.Italic);
+        private static async Task<Question> WriteQuestion(
+            InputItem inputItem,
+            PngEncoder enc, int qNo, int detectedQNo, Image pageImage, IEnumerable<OcrLine> qLines, string outputDirPath)
         {
             if (!qLines.Any() || detectedQNo < 1)
             {
                 return null;
             }
 
-            var qImagePath = $"q{qNo.ToString("000")}.png";
-            var qTextPath = $"q{qNo.ToString("000")}.txt";
+            var qImagePath = Path.Combine(outputDirPath, $"q{qNo.ToString("000")}.png");
+            var qTextPath = Path.Combine(outputDirPath, $"q{qNo.ToString("000")}.txt");
 
             // ページ番号行を消し飛ばす
             var pageNoReg = new Regex(@"^[ -~]+$");
@@ -136,7 +163,12 @@ namespace JITECMondaiFormatter
             var qRight = (int)(pageImage.Width * 0.95);
             var qTop = (int)Math.Max(0, normalizedLines.Min(x => x.Words.Min(y => y.BoundingRect.Top)) - 16);
             var qBottom = (int)Math.Min(pageImage.Height, normalizedLines.Max(x => x.Words.Max(y => y.BoundingRect.Top)) + 64);
-            using var qImage = pageImage.Clone(x => x.Crop(new Rectangle(qLeft, qTop, qRight - qLeft, qBottom - qTop)));
+            var refText = $"出典: {inputItem.ExamRefName} 問 {string.Format("{0,2}", qNo)}";
+
+            using var qImage = pageImage
+                .Clone(x => x.Crop(new Rectangle(qLeft, qTop, qRight - qLeft, qBottom - qTop)));
+            // TODO 右寄せ面倒臭いけれど右寄せのほうがよさそう
+            qImage.Mutate(x => x.DrawText(refText, font, Color.Black, new PointF(8, qImage.Height - 24)));
             await qImage.SaveAsync(qImagePath, enc);
 
             var qText = string.Join(Environment.NewLine, normalizedLines.Select(x => x.Text));

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace JITECMondaiFormatter
 {
@@ -10,7 +6,14 @@ namespace JITECMondaiFormatter
     {
     }
 
-    public record InputItem(string QuestionFilePath, string AnswerFilePath)
+    public record InputItem(
+        string ExamId,
+        string ExamPartId,
+        // 出典などに使用する試験名
+        string ExamRefName,
+        string QuestionFilePath, 
+        string AnswerFilePath
+        )
     {
     }
 }
