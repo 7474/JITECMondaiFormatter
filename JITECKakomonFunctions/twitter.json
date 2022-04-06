@@ -1495,7 +1495,6 @@
                   },
                   "reply_settings" : {
                     "type" : "string",
-                    "enum" : [ "following", "mentionedUsers" ],
                     "description" : "Settings to indicate who can reply to the Tweet."
                   },
                   "geo" : {
