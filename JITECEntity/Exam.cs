@@ -20,7 +20,7 @@ namespace JITECEntity
     public record Question(
         int No,
         string QuestionText,
-        string QUestionImagePath,
+        string QuestionImagePath,
         string AnswerText
         )
     {

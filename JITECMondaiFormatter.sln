@@ -4,9 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.1.31911.260
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JITECMondaiFormatter", "JITECMondaiFormatter\JITECMondaiFormatter.csproj", "{A5668A8B-9EF9-473C-BE78-EAFFE6E87D0B}"
-	ProjectSection(ProjectDependencies) = postProject
-		{C3923AB9-D1FB-470A-9CE4-32A1AE2020A1} = {C3923AB9-D1FB-470A-9CE4-32A1AE2020A1}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JITECKakomonFunctions", "JITECKakomonFunctions\JITECKakomonFunctions.csproj", "{766ACEC5-A7FC-47AC-A87C-7D09AA180449}"
 EndProject
