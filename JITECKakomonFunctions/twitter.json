@@ -5911,9 +5911,6 @@
         "properties" : {
           "sent" : {
             "type" : "string"
-          },
-          "summary" : {
-            "$ref" : "#/components/schemas/RulesRequestSummary"
           }
         }
       },
