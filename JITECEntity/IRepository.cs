@@ -8,6 +8,6 @@ namespace JITECEntity
         Task SaveExamPartAsync(ExamPart examPart);
 
         Task<ExamPartOnTwitter> GetExamPartOnTwitterAsync(string examId, string examPartId);
-        Task SaveExamPartAsync(ExamPartOnTwitter examPart);
+        Task SaveExamPartOnTwitterAsync(ExamPartOnTwitter examPartOnTwitter);
     }
 }
