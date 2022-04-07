@@ -1,12 +1,10 @@
+using Azure.Storage.Blobs;
 using JITECEntity;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using Tweetinvi;
 using Tweetinvi.Parameters;
 
@@ -14,32 +12,48 @@ namespace JITECKakomonFunctions
 {
     public class TweetNewKakomon
     {
-        [FunctionName("TweetNewKakomon")]
-        public async Task RunAsync([QueueTrigger("new-tweet", Connection = "AzureWebJobsStorage")] string myQueueItem, ILogger log)
+        private Repository _repository;
+        private ITwitterClient _twitterClient;
+
+        public TweetNewKakomon(IConfiguration config)
         {
-            log.LogInformation($"TweetNewKakomon#RunAcync: {myQueueItem}");
+            string consumerKey = config.GetValue<string>("TWITTER_API_KEY");
+            string consumerSecret = config.GetValue<string>("TWITTER_API_KEY_SECRET");
+            string accessKey = config.GetValue<string>("TWITTER_ACCESS_KEY");
+            string accessSecret = config.GetValue<string>("TWITTER_ACCESS_KEY_SECRET");
+            _twitterClient = new TwitterClient(consumerKey, consumerSecret, accessKey, accessSecret);
 
-            string consumerKey = "xxx";
-            string consumerSecret = "xxx";
-            string accessKey = "xxx-xxx";
-            string accessSecret = "xxx";
-            var appClient = new TwitterClient(consumerKey, consumerSecret, accessKey, accessSecret);
+            string storageConnectionString = config.GetValue<string>("AzureWebJobsStorage");
+            string containerName = config.GetValue<string>("BLOB_CONTAINER_NAME");
+            var blobClient = new BlobServiceClient(storageConnectionString);
+            _repository = new Repository(blobClient, containerName);
+        }
 
-            //var blobServiceClient = new BlobServiceClient("");
-            var questionsUri = "https://ipakakomon.blob.core.windows.net/ipa-kakomon/2021r03a_ap/2021r03a_ap_am_qs.json";
-            var httpClient = new HttpClient();
-            var examPart = JsonConvert.DeserializeObject<ExamPart>(await httpClient.GetStringAsync(questionsUri));
-            var question = examPart.Questions.First();
-            var qImageUri = $"https://ipakakomon.blob.core.windows.net/ipa-kakomon/{question.QuestionImagePath}";
+        [Function("TweetNewKakomon")]
+        public async Task RunAsync(
+            [QueueTrigger("new-tweet", Connection = "AzureWebJobsStorage")] string myQueueItem,
+            FunctionContext executionContext)
+        {
+            ILogger log = executionContext.GetLogger(this.GetType().Name);
+
+            log.LogInformation($"Start TweetNewKakomon#RunAcync: {myQueueItem}");
+
+            string examId = "2021r03a_ap";
+            string examPartId = "2021r03a_ap_am_qs";
+            int questionNo = 1;
+
+            var examPart = await _repository.GetExamPartAsync(examId, examPartId);
+            var question = examPart.Questions.First(x => x.No == questionNo);
+
             var tweetText = $"#{examPart.ExamId} #{examPart.ExamPartId} 問.{question.No}\n{question.QuestionText.Substring(0, 80)}……";
             var pollOptions = new List<string>() { "ア", "イ", "ウ", "エ" };
 
-            var uploadedImage = await appClient.Upload.UploadTweetImageAsync(
-                new UploadTweetImageParameters(await httpClient.GetByteArrayAsync(qImageUri))
+            var uploadedImage = await _twitterClient.Upload.UploadTweetImageAsync(
+                new UploadTweetImageParameters(await _repository.GetQuestionImageBinAsync(question))
                 {
                 });
             log.LogInformation($"uploadedImage: {uploadedImage}");
-            var questionTweet = await appClient.Tweets.PublishTweetAsync(new PublishTweetParameters(tweetText)
+            var questionTweet = await _twitterClient.Tweets.PublishTweetAsync(new PublishTweetParameters(tweetText)
             {
                 Medias = { uploadedImage }
             });
@@ -61,13 +75,29 @@ namespace JITECKakomonFunctions
             };
             var pollPayloadJson = JsonConvert.SerializeObject(pollPayload);
             var pollContent = new StringContent(pollPayloadJson, Encoding.UTF8, "application/json");
-            var pollTweet = await appClient.Execute.RequestAsync(pollRequest =>
+            var pollTweet = await _twitterClient.Execute.RequestAsync(pollRequest =>
             {
                 pollRequest.Url = "https://api.twitter.com/2/tweets";
                 pollRequest.HttpMethod = Tweetinvi.Models.HttpMethod.POST;
                 pollRequest.HttpContent = pollContent;
             });
             log.LogInformation($"pollTweet: {pollTweet?.Response?.Content}");
+            var pollTweetObj = JsonConvert.DeserializeObject<TwitterApiV2.TweetCreateResponse>(pollTweet.Response.Content);
+
+            var onTwitter = (await _repository.GetExamPartOnTwitterAsync(examId, examPartId)) ?? new ExamPartOnTwitter(
+                examId, examPartId, new List<QuestionOnTwitter>(), 1
+                );
+            var onTwitterAdded = onTwitter.PutQuestion(new QuestionOnTwitter(
+                question.No,
+                new TwitterQuestion(
+                    questionTweet.IdStr,
+                    pollTweetObj.Data.Id,
+                    DateTime.UtcNow
+                ),
+                null));
+            await _repository.SaveExamPartOnTwitterAsync(onTwitterAdded);
+
+            log.LogInformation($"End TweetNewKakomon#RunAcync");
         }
     }
 }

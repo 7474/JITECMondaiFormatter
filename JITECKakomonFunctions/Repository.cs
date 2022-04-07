@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using JITECEntity;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
@@ -40,7 +41,7 @@ namespace JITECKakomonFunctions
             return content.Value.Content.ToObjectFromJson<ExamPart>();
         }
 
-        public async Task<ExamPartOnTwitter> GetExamPartOnTwitterAsync(string examId, string examPartId)
+        public async Task<ExamPartOnTwitter?> GetExamPartOnTwitterAsync(string examId, string examPartId)
         {
             var blob = ToExamPartOnTwitterBlob(examId, examPartId);
             if (!await blob.ExistsAsync()) { return null; }
@@ -51,13 +52,19 @@ namespace JITECKakomonFunctions
         public async Task SaveExamPartAsync(ExamPart examPart)
         {
             var blob = ToExamPartBlob(examPart.ExamId, examPart.ExamPartId);
-            await blob.UploadAsync(JsonConvert.SerializeObject(examPart));
+            await blob.UploadAsync(new BinaryData(examPart), true);
         }
 
         public async Task SaveExamPartOnTwitterAsync(ExamPartOnTwitter examPartOnTwitter)
         {
             var blob = ToExamPartOnTwitterBlob(examPartOnTwitter.ExamId, examPartOnTwitter.ExamPartId);
-            await blob.UploadAsync(JsonConvert.SerializeObject(examPartOnTwitter));
+            await blob.UploadAsync(new BinaryData(examPartOnTwitter), true);
+        }
+
+        public async Task<byte[]> GetQuestionImageBinAsync(Question question)
+        {
+            var blob = _blobContainerClient.GetBlobClient(question.QuestionImagePath);
+            return (await blob.DownloadContentAsync()).Value.Content.ToArray();
         }
     }
 }

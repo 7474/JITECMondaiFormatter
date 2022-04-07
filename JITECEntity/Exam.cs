@@ -44,7 +44,6 @@ namespace JITECEntity
     {
     }
     public record TwitterQuestion(
-        int No,
         string QuestionTweetId,
         string PollTweetId,
         DateTime CreatedAt
@@ -52,7 +51,6 @@ namespace JITECEntity
     {
     }
     public record TwitterAnswer(
-        int No,
         IList<string> PollOptions,
         IList<int> PollAnswers,
         DateTime CreatedAt
