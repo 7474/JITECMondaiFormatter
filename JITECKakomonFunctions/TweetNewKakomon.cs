@@ -1,21 +1,23 @@
 using Azure.Storage.Blobs;
 using JITECEntity;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System.Net;
 using System.Text;
 using Tweetinvi;
 using Tweetinvi.Parameters;
 
 namespace JITECKakomonFunctions
 {
-    public class TweetNewKakomon
+    public class Functions
     {
         private Repository _repository;
         private ITwitterClient _twitterClient;
 
-        public TweetNewKakomon(IConfiguration config)
+        public Functions(IConfiguration config)
         {
             string consumerKey = config.GetValue<string>("TWITTER_API_KEY");
             string consumerSecret = config.GetValue<string>("TWITTER_API_KEY_SECRET");
@@ -29,18 +31,21 @@ namespace JITECKakomonFunctions
             _repository = new Repository(blobClient, containerName);
         }
 
+        public record TweetNewKakomonRequest(string ExamId, string ExamPartId, int QuestionNo) { }
+
         [Function("TweetNewKakomon")]
-        public async Task RunAsync(
-            [QueueTrigger("new-tweet", Connection = "AzureWebJobsStorage")] string myQueueItem,
+        public async Task<HttpResponseData> RunTweetNewKakomonAsync(
+            [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData req,
             FunctionContext executionContext)
         {
             ILogger log = executionContext.GetLogger(this.GetType().Name);
 
-            log.LogInformation($"Start TweetNewKakomon#RunAcync: {myQueueItem}");
+            log.LogInformation($"Start RunTweetNewKakomonAsync: {req}");
 
-            string examId = "2021r03a_ap";
-            string examPartId = "2021r03a_ap_am_qs";
-            int questionNo = 1;
+            var reqBody = await req.ReadFromJsonAsync<TweetNewKakomonRequest>();
+            string examId = reqBody.ExamId;// "2021r03a_ap";
+            string examPartId = reqBody.ExamPartId; // "2021r03a_ap_am_qs";
+            int questionNo = reqBody.QuestionNo;
 
             var examPart = await _repository.GetExamPartAsync(examId, examPartId);
             var question = examPart.Questions.First(x => x.No == questionNo);
@@ -97,7 +102,9 @@ namespace JITECKakomonFunctions
                 null));
             await _repository.SaveExamPartOnTwitterAsync(onTwitterAdded);
 
-            log.LogInformation($"End TweetNewKakomon#RunAcync");
+            log.LogInformation($"End RunTweetNewKakomonAsync");
+
+            return req.CreateResponse(HttpStatusCode.OK);
         }
     }
 }
