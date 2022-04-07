@@ -25,7 +25,7 @@ namespace JITECKakomonFunctions
             string accessSecret = config.GetValue<string>("TWITTER_ACCESS_KEY_SECRET");
             _twitterClient = new TwitterClient(consumerKey, consumerSecret, accessKey, accessSecret);
 
-            string storageConnectionString = config.GetValue<string>("AzureWebJobsStorage");
+            string storageConnectionString = config.GetValue<string>("STORAGE_CONNECTION_STRING");
             string containerName = config.GetValue<string>("BLOB_CONTAINER_NAME");
             var blobClient = new BlobServiceClient(storageConnectionString);
             _repository = new Repository(blobClient, containerName);
