@@ -49,7 +49,7 @@ namespace JITECMondaiFormatter
                 outputDirPath
                 );
 
-            var output = new ExamPart(inputeItem.ExamId, inputeItem.ExamPartId, questions.ToList());
+            var output = new ExamPart(inputeItem.ExamId, inputeItem.ExamPartId, questions.ToList(), 1);
 
             var outputFilePath = Path.Combine(examId, examPartId + ".json");
             await File.WriteAllTextAsync(outputFilePath, JsonConvert.SerializeObject(output));

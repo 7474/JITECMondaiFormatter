@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace JITECEntity
 {
@@ -12,7 +13,8 @@ namespace JITECEntity
     public record ExamPart(
         string ExamId,
         string ExamPartId,
-        IList<Question> Questions
+        IList<Question> Questions,
+        int Version
         )
     {
     }
@@ -22,6 +24,36 @@ namespace JITECEntity
         string QuestionText,
         string QuestionImagePath,
         string AnswerText
+        )
+    {
+    }
+
+    public record ExamPartOnTwitter(
+        string ExamId,
+        string ExamPartId,
+        IList<QuestionOnTwitter> Questions,
+        int Version
+        )
+    {
+    }
+    public record QuestionOnTwitter(
+        int No,
+        TwitterQuestion Question,
+        TwitterAnswer Answer
+        )
+    {
+    }
+    public record TwitterQuestion(
+        string QuestionTweetId,
+        string PollTweetId,
+        DateTime CreatedAt
+        )
+    {
+    }
+    public record TwitterAnswer(
+        IList<string> PollOptions,
+        IList<int> PollAnswers,
+        DateTime CreatedAt
         )
     {
     }
