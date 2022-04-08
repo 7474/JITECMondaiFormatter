@@ -36,7 +36,7 @@ namespace JITECKakomonFunctions
 
         [Function("ListKakomon")]
         public async Task<HttpResponseData> RunListKakomonAsync(
-            [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req,
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestData req,
             FunctionContext executionContext)
         {
             ILogger log = executionContext.GetLogger(this.GetType().Name);
@@ -59,7 +59,7 @@ namespace JITECKakomonFunctions
 
         [Function("NextKakomon")]
         public async Task<HttpResponseData> RunNextNewKakomonAsync(
-            [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req,
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestData req,
             FunctionContext executionContext)
         {
             ILogger log = executionContext.GetLogger(this.GetType().Name);
