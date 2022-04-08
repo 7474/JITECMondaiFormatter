@@ -71,7 +71,8 @@ namespace JITECKakomonFunctions
             var examPartId = query["ExamPartId"].First();
 
             var examPart = await _repository.GetExamPartAsync(examId, examPartId);
-            var examPartOnTwitter = await _repository.GetExamPartOnTwitterAsync(examId, examPartId);
+            var examPartOnTwitter = await _repository.GetExamPartOnTwitterAsync(examId, examPartId)
+                ?? new ExamPartOnTwitter(examPart.ExamId, examPart.ExamPartId, new List<QuestionOnTwitter>(), 0);
 
             var tweetedQuestionNos = examPartOnTwitter.Questions.Select(x => x.No).ToHashSet();
             var nonTweetQuestions = examPart.Questions.Where(x => !tweetedQuestionNos.Contains(x.No)).ToList();
