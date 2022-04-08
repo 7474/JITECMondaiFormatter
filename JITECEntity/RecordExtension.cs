@@ -1,9 +1,13 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace JITECEntity
 {
     public static class RecordExtension
     {
+        private static Random random = new Random();
+
         public static ExamPartOnTwitter PutQuestion(this ExamPartOnTwitter examPart, QuestionOnTwitter question)
         {
             return new ExamPartOnTwitter(
@@ -16,6 +20,11 @@ namespace JITECEntity
                     .OrderBy(x => x.No).ToList(),
                 examPart.Version + 1
                 );
+        }
+
+        public static T ChoseRandom<T>(this ICollection<T> collection)
+        {
+            return collection.Skip(random.Next(collection.Count)).First();
         }
     }
 }

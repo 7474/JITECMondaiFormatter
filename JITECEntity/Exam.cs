@@ -3,6 +3,21 @@ using System.Collections.Generic;
 
 namespace JITECEntity
 {
+    public record ExamPartSummary(
+        string ExamId,
+        string ExamPartId
+        )
+    {
+    }
+
+    public record QuestionSummary(
+        string ExamId,
+        string ExamPartId,
+        int No
+        )
+    {
+    }
+
     public record Exam(
         string ExamId,
         IList<ExamPart> Items
