@@ -1,8 +1,6 @@
 # JITECKakomon
 
-情報処理技術者試験の過去問題に関する遊びリポジトリ。
-
-https://www.jitec.ipa.go.jp/1_04hanni_sukiru/_index_mondai.html
+[情報処理技術者試験の過去問題](https://www.jitec.ipa.go.jp/1_04hanni_sukiru/_index_mondai.html)に関する遊びリポジトリ。
 
 ## JITECEntity
 
@@ -11,6 +9,17 @@ https://www.jitec.ipa.go.jp/1_04hanni_sukiru/_index_mondai.html
 ## JITECKakomonFunctions
 
 過去問題をTwitterに投稿するBotのAzure Funcsions。
+
+### IPA過去問Bot
+
+情報処理技術者試験の過去問題の画像とアンケートをセットでつぶやくBot。
+
+スケジュールなどはLogic Apps（コード未管理）。
+
+https://twitter.com/ipa_kakomon
+
+> ![image](https://user-images.githubusercontent.com/4744735/162548806-8142e216-dbe3-4f2e-bb44-1b1a78d12bd0.png)
+
 
 ## JITECMondaiFormatter
 
