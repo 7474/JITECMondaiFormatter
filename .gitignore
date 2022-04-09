@@ -365,3 +365,5 @@ FodyWeavers.xsd
 # Application local
 /mondai
 /OCRResult
+/JITECKakomonViewer/output
+/JITECKakomonViewer/cache
