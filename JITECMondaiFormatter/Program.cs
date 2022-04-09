@@ -49,7 +49,7 @@ namespace JITECMondaiFormatter
                 outputDirPath
                 );
 
-            var output = new ExamPart(inputeItem.ExamId, inputeItem.ExamPartId, questions.ToList(), 1);
+            var output = new ExamPart(inputeItem.ExamId, inputeItem.ExamPartId, examRefName, questions.ToList(), 1);
 
             var outputFilePath = Path.Combine(examId, examPartId + ".json");
             await File.WriteAllTextAsync(outputFilePath, JsonConvert.SerializeObject(output));
@@ -177,7 +177,7 @@ namespace JITECMondaiFormatter
             Console.WriteLine(qText);
 
             // XXX 回答ここで処理できるわけねーだろ
-            return new Question(qNo, qText, qImagePath, "-");
+            return new Question(qNo, qText, qImagePath.Replace("\\", "/"), "-");
         }
     }
 }
