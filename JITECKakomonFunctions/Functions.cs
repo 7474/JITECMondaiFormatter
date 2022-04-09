@@ -106,7 +106,9 @@ namespace JITECKakomonFunctions
             var examPart = await _repository.GetExamPartAsync(examId, examPartId);
             var question = examPart.Questions.First(x => x.No == questionNo);
 
-            var tweetText = $"#{examPart.ExamId} #{examPart.ExamPartId} 問.{question.No}\n{question.QuestionText.Substring(0, 80)}……";
+            var tweetText = $"#{examPart.ExamId} #{examPart.ExamPartId} 問.{question.No}\n" +
+                $"{question.QuestionText.Substring(0, 60)}...\n" +
+                $"（{examPart.Name}）";
             var pollOptions = new List<string>() { "ア", "イ", "ウ", "エ" };
 
             var uploadedImage = await _twitterClient.Upload.UploadTweetImageAsync(

@@ -20,6 +20,7 @@ namespace JITECEntity
 
     public record Exam(
         string ExamId,
+        string Name,
         IList<ExamPart> Items
         )
     {
@@ -28,6 +29,7 @@ namespace JITECEntity
     public record ExamPart(
         string ExamId,
         string ExamPartId,
+        string Name,
         IList<Question> Questions,
         int Version
         )
