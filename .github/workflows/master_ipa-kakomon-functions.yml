@@ -7,6 +7,10 @@ on:
   push:
     branches:
       - master
+    paths:
+      - '.github/workflows/master_ipa-kakomon-functions.yml'
+      - 'JITECEntity/**'
+      - 'JITECKakomonFunctions/**'
   workflow_dispatch:
 
 env:
