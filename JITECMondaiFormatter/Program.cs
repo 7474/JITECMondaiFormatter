@@ -46,16 +46,22 @@ namespace JITECMondaiFormatter
         public static async Task<IEnumerable<Question>> ReadQuestion(
             InputItem inputItem, string outputDirPath)
         {
+            Console.WriteLine(JsonConvert.SerializeObject(inputItem));
+            Console.WriteLine(outputDirPath);
+
             var pngEnc = new PngEncoder();
             var rawEnc = new BmpEncoder();
             var ocr = OcrEngine.TryCreateFromLanguage(new Language("ja"));
 
-            var req = WebRequest.Create(new Uri(inputItem.QuestionFileUri));
-            using var res = await req.GetResponseAsync();
-            using var resStream = res.GetResponseStream();
-            using var memStream = new MemoryStream();
-            resStream.CopyTo(memStream);
-            var fileContent = memStream.ToArray();
+            byte[] fileContent;
+            {
+                var req = WebRequest.Create(new Uri(inputItem.QuestionFileUri));
+                using var res = await req.GetResponseAsync();
+                using var resStream = res.GetResponseStream();
+                using var memStream = new MemoryStream();
+                resStream.CopyTo(memStream);
+                fileContent = memStream.ToArray();
+            }
             using var doc = new PdfDocument(fileContent);
             var pageNumber = 0;
             var qNo = 0;
@@ -79,14 +85,14 @@ namespace JITECMondaiFormatter
                 //await rawPageImage.SaveAsync(pageImagePath, pngEnc);
 
                 using var normalizedPageImage = await NormalizePageImage(ocr, rawPageImage);
-                await rawPageImage.SaveAsync(pageImagePath, pngEnc);
+                //await rawPageImage.SaveAsync(pageImagePath, pngEnc);
 
                 // OCR
                 using var bmpStream = new InMemoryRandomAccessStream();
                 await normalizedPageImage.SaveAsync(bmpStream.AsStream(), pngEnc);
                 var bmpDec = await BitmapDecoder.CreateAsync(bmpStream);
                 var ocrRes = await ocr.RecognizeAsync(await bmpDec.GetSoftwareBitmapAsync());
-                await File.WriteAllTextAsync(pageTextPath, ocrRes.Text);
+                //await File.WriteAllTextAsync(pageTextPath, ocrRes.Text);
 
                 // Detect Question
                 var qLines = new List<OcrLine>();
