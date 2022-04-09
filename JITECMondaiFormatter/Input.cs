@@ -2,7 +2,7 @@
 
 namespace JITECMondaiFormatter
 {
-    public record Input(IEnumerable<InputItem> Items)
+    public record Input(IList<InputItem> Items)
     {
     }
 
@@ -11,8 +11,8 @@ namespace JITECMondaiFormatter
         string ExamPartId,
         // 出典などに使用する試験名
         string ExamRefName,
-        string QuestionFilePath, 
-        string AnswerFilePath
+        string QuestionFileUri,
+        string AnswerFileUri
         )
     {
     }

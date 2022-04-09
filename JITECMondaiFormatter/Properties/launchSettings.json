@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "JITECMondaiFormatter": {
+      "commandName": "Project",
+      "commandLineArgs": "Input/2021r03a_ap.json"
+    }
+  }
+}
