@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Statiq.App;
 using Statiq.Web;
 
@@ -9,7 +9,8 @@ namespace JITECKakomonViewer
         public static async Task<int> Main(string[] args) =>
           await Bootstrapper
             .Factory
-            .CreateWeb(args)
+            .CreateDefault(args)
+            .AddHostingCommands()
             .RunAsync();
     }
 }

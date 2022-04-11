@@ -1,0 +1,23 @@
+@model ExamPartViewModel
+
+<section>
+<h1>@Model.ExamPartResult.ExamPart.Name</h1>
+<div>
+    @foreach (var q in Model.ExamPartResult.Questions)
+    {
+        <article>
+            <h2>問. @q.Question.No</h2>
+            <p>@q.Question.QuestionText</p>
+            <img src="@Model.ToQuestionImageUrl(Model.ExamPartResult.ExamPart, q.Question)">
+            @if(q?.QuestionOnTwitter?.Question.QuestionTweetId != null)
+            {
+                <a href="@Model.ToTweetUrl(q.QuestionOnTwitter?.Question.QuestionTweetId)">Question Tweet</a>
+            }
+            @if(q?.QuestionOnTwitter?.Question.PollTweetId != null)
+            {
+                <a href="@Model.ToTweetUrl(q.QuestionOnTwitter?.Question.PollTweetId)">Poll Tweet</a>
+            }
+        </article>
+    }
+</div>
+</section>
