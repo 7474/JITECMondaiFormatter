@@ -23,6 +23,11 @@ namespace JITECKakomonViewer
             })
             .AddPipeline<ExamPartPipeline>(typeof(ExamPartPipeline).Name)
             .AddPipeline<ExamPartIndexPipeline>(typeof(ExamPartIndexPipeline).Name)
+            .DeployToGitHubPagesBranch(
+                Config.FromSetting<string>("GitHubOwner"),
+                Config.FromSetting<string>("GitHubName"),
+                Config.FromSetting<string>("GitHubToken"),
+                Config.FromSetting<string>("GitHubBranch"))
             .RunAsync();
     }
 }
