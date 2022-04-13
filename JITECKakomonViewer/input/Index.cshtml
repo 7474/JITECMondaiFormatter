@@ -1,0 +1,22 @@
+@model IndexViewModel
+
+<section>
+	<h1>IPA過去問Bot Viewer</h1>
+	<div>
+		<ul>
+		@foreach (var exam in Model.ExamPartViewModels)
+		{
+			<li>
+				<h2>
+					<a href="@($"exam/{exam.ExamPartResult.ExamPart.ExamPartId}.html")">
+						@exam.ExamPartResult.ExamPart.Name
+					</a>
+				</h2>
+				<a href="@($"https://twitter.com/hashtag/{exam.ExamPartResult.ExamPart.ExamPartId}?f=live")">
+					#@exam.ExamPartResult.ExamPart.ExamPartId
+				</a>
+			</li>
+		}
+		</ul>
+	</div>
+</section>

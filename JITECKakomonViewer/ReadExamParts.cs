@@ -7,24 +7,14 @@ namespace JITECKakomonViewer
     public class ReadExamParts : Module
     {
         private Input input;
+        private IRepository _repository;
 
-        public ReadExamParts(NormalizedPath inputFilePath)
+        public ReadExamParts(NormalizedPath inputFilePath, IRepository repository)
         {
             input = JsonConvert.DeserializeObject<Input>(File.ReadAllText(inputFilePath.FullPath));
+            _repository = repository;
             Console.WriteLine(inputFilePath);
             Console.WriteLine(JsonConvert.SerializeObject(input));
-        }
-
-        public static async Task<T> LoadFromUriAsync<T>(string uri)
-        {
-            try
-            {
-                using var http = new HttpClient();
-                var content = await http.GetStringAsync(uri);
-                return JsonConvert.DeserializeObject<T>(content);
-            }
-            catch { }
-            return default(T);
         }
 
         protected override async Task<IEnumerable<IDocument>> ExecuteContextAsync(IExecutionContext context)
@@ -33,8 +23,8 @@ namespace JITECKakomonViewer
             return input.Items
                 .Select(async x =>
                 {
-                    var examPart = await LoadFromUriAsync<ExamPart>(input.ToBlobUrl($"{x.ExamId}/{x.ExamPartId}.json"));
-                    var examPartOnTwitter = await LoadFromUriAsync<ExamPartOnTwitter>(input.ToBlobUrl($"{x.ExamId}/{x.ExamPartId}-twitter.json"));
+                    var examPart = await _repository.GetExamPartAsync(x.ExamId, x.ExamPartId);
+                    var examPartOnTwitter = await _repository.GetExamPartOnTwitterAsync(x.ExamId, x.ExamPartId);
 
                     var qMap = examPart?.Questions.GroupBy(x => x.No).ToDictionary(x => x.Key, x => x.First());
                     var tMap = examPartOnTwitter?.Questions.GroupBy(x => x.No).ToDictionary(x => x.Key, x => x.First());

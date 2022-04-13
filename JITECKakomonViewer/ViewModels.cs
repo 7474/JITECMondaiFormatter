@@ -28,4 +28,13 @@ namespace JITECKakomonViewer
             ExamPartResult = examPartResult;
         }
     }
+
+    public class IndexViewModel
+    {
+        public IEnumerable<ExamPartViewModel> ExamPartViewModels { get; private set; }
+        public IndexViewModel(IEnumerable<ExamPartViewModel> examPartViewModels)
+        {
+            ExamPartViewModels = examPartViewModels;
+        }
+    }
 }
