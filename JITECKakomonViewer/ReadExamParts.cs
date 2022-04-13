@@ -13,8 +13,6 @@ namespace JITECKakomonViewer
         {
             input = JsonConvert.DeserializeObject<Input>(File.ReadAllText(inputFilePath.FullPath));
             _repository = repository;
-            Console.WriteLine(inputFilePath);
-            Console.WriteLine(JsonConvert.SerializeObject(input));
         }
 
         protected override async Task<IEnumerable<IDocument>> ExecuteContextAsync(IExecutionContext context)
