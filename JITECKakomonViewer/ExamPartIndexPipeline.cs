@@ -36,7 +36,7 @@ namespace JITECKakomonViewer
                         };
                     })
                 ),
-                new MergeContent(new ReadFiles("Index.cshtml")),
+                new MergeContent(new ReadFiles("_Index.cshtml")),
                 new RenderRazor().WithModel(Config.FromDocument((doc, context) =>
                 {
                     var vm = doc.Get<IndexViewModel>("Model");
