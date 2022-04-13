@@ -13,6 +13,7 @@ namespace JITECKakomonViewer
           await Bootstrapper
             .Factory
             .CreateDefault(args)
+            .AddWeb()
             .AddHostingCommands()
             .ConfigureServices(services =>
             {

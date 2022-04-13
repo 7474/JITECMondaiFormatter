@@ -16,7 +16,7 @@ namespace JITECKakomonViewer
 
             ProcessModules = new ModuleList
             {
-                new MergeContent(new ReadFiles("ExamPart.cshtml")),
+                new MergeContent(new ReadFiles("_ExamPart.cshtml")),
                 new RenderRazor().WithModel(Config.FromDocument((doc, context) =>
                 {
                     return doc.Get<ExamPartViewModel>("Model");
