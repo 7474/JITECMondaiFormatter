@@ -1,7 +1,9 @@
 ﻿using JITECEntity;
 using Newtonsoft.Json;
 using PDFiumSharp;
+using SixLabors.Fonts;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats.Bmp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
@@ -9,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using SixLabors.Fonts;
@@ -21,35 +24,22 @@ namespace JITECMondaiFormatter
     {
         static async Task Main(string[] args)
         {
-            // TODO パラメータ化など
-            var examId = "2021r03a_ap";
-            var examPartId = "2021r03a_ap_am_qs";
-            var inputFilePath = @"C:\Users\koudenpa\source\repos\JITECMondaiFormatter\mondai\2021\2021r03a_ap_am_qs.pdf";
-            var examRefName = "令和3年度 秋期 応用情報技術者試験 午前 問題";
+            var inputs = JsonConvert.DeserializeObject<Input>(await File.ReadAllTextAsync(args[0]));
+            await Parallel.ForEachAsync(inputs.Items, async (item, _) =>
+            {
+                var outputDirPath = Path.Combine(item.ExamId, item.ExamPartId);
+                Directory.CreateDirectory(outputDirPath);
 
-            var input = new Input(new List<InputItem> {
-                new InputItem(
-                    examId,
-                    examPartId,
-                    examRefName,
-                    inputFilePath,
-                    ""
-                    )
+                var questions = await ReadQuestion(
+                    item,
+                    outputDirPath
+                    );
+
+                var output = new ExamPart(item.ExamId, item.ExamPartId, item.ExamRefName, questions.ToList(), 1);
+
+                var outputFilePath = Path.Combine(item.ExamId, item.ExamPartId + ".json");
+                await File.WriteAllTextAsync(outputFilePath, JsonConvert.SerializeObject(output));
             });
-
-            var inputeItem = input.Items.First();
-            var outputDirPath = Path.Combine(examId, examPartId);
-            Directory.CreateDirectory(outputDirPath);
-
-            var questions = await ReadQuestion(
-                inputeItem,
-                outputDirPath
-                );
-
-            var output = new ExamPart(inputeItem.ExamId, inputeItem.ExamPartId, examRefName, questions.ToList(), 1);
-
-            var outputFilePath = Path.Combine(examId, examPartId + ".json");
-            await File.WriteAllTextAsync(outputFilePath, JsonConvert.SerializeObject(output));
         }
 
         public record OcrLine(
@@ -61,12 +51,24 @@ namespace JITECMondaiFormatter
         public static async Task<IEnumerable<Question>> ReadQuestion(
             InputItem inputItem, string outputDirPath)
         {
+            Console.WriteLine(JsonConvert.SerializeObject(inputItem));
+            Console.WriteLine(outputDirPath);
+
             var pngEnc = new PngEncoder();
             var rawEnc = new BmpEncoder();
             // https://github.com/tesseract-ocr/tessdata
             using var ocr = new TesseractEngine(@"./tessdata", "eng+jpn", EngineMode.Default);
 
-            using var doc = new PdfDocument(inputItem.QuestionFilePath);
+            byte[] fileContent;
+            {
+                var req = WebRequest.Create(new Uri(inputItem.QuestionFileUri));
+                using var res = await req.GetResponseAsync();
+                using var resStream = res.GetResponseStream();
+                using var memStream = new MemoryStream();
+                resStream.CopyTo(memStream);
+                fileContent = memStream.ToArray();
+            }
+            using var doc = new PdfDocument(fileContent);
             var pageNumber = 0;
             var qNo = 0;
             var qList = new List<Question>();
@@ -89,7 +91,7 @@ namespace JITECMondaiFormatter
                 //await rawPageImage.SaveAsync(pageImagePath, pngEnc);
 
                 using var normalizedPageImage = await NormalizePageImage(ocr, rawPageImage);
-                await rawPageImage.SaveAsync(pageImagePath, pngEnc);
+                //await rawPageImage.SaveAsync(pageImagePath, pngEnc);
 
                 // OCR
                 using var bmpStream = new MemoryStream();

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Statiq.Json" Version="1.0.0-alpha.27" />
+    <PackageReference Include="Statiq.Razor" Version="1.0.0-beta.60" />
+    <PackageReference Include="Statiq.Web" Version="1.0.0-beta.47" />
+    <PackageReference Include="Statiq.Web.GitHub" Version="1.0.0-beta.47" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\JITECEntity\JITECEntity.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="input\2021r03a.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

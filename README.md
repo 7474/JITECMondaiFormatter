@@ -6,6 +6,15 @@
 
 各プロジェクトで共通して使う型。
 
+## JITECKakomonViewer
+
+過去問題を閲覧する静的サイトのジェネレータ。
+
+https://www.statiq.dev/ を用いている。
+
+https://7474.github.io/JITECKakomon/
+
+
 ## JITECKakomonFunctions
 
 過去問題をTwitterに投稿するBotのAzure Funcsions。

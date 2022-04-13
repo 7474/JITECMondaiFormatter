@@ -1,8 +1,5 @@
-﻿using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs;
 using JITECEntity;
-using Newtonsoft.Json;
-using System.Threading.Tasks;
 
 namespace JITECKakomonFunctions
 {
