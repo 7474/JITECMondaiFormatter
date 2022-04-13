@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace JITECEntity
@@ -71,6 +71,25 @@ namespace JITECEntity
         IList<string> PollOptions,
         IList<int> PollAnswers,
         DateTime CreatedAt
+        )
+    {
+    }
+
+    public record ExamResult(
+        Exam Exam,
+        ExamPartResult ExamPartResult
+        )
+    {
+    }
+    public record ExamPartResult(
+        ExamPart ExamPart,
+        IList<QuestionResult> Questions
+        )
+    {
+    }
+    public record QuestionResult(
+        Question Question,
+        QuestionOnTwitter QuestionOnTwitter
         )
     {
     }
