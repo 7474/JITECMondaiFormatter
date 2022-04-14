@@ -6,8 +6,10 @@
 	{
 		<article>
 			<h3>問. @q.Question.No</h3>
-			<p>@q.Question.QuestionText</p>
-			<img src="@Model.ToQuestionImageUrl(Model.ExamPartResult.ExamPart, q.Question)">
+			<figure>
+				<figcaption><small>@q.Question.QuestionText</small></figcaption>
+				<img src="@Model.ToQuestionImageUrl(Model.ExamPartResult.ExamPart, q.Question)" alt="問. @q.Question.No 設問画像">
+			</figure>
 			@if (q?.QuestionOnTwitter?.Question.QuestionTweetId != null)
 			{
 				<p>

@@ -10,14 +10,14 @@
 					<a href="@($"exam/{exam.ExamPartResult.ExamPart.ExamPartId}.html")">
 						@exam.ExamPartResult.ExamPart.Name
 					</a>
-					<sup>
-						@exam.ExamPartResult.Questions.Where(x => x.QuestionOnTwitter != null).Count() / @exam.ExamPartResult.Questions.Count
-					</sup>
 				</h3>
 				<p>
 					<a href="@($"https://twitter.com/hashtag/{exam.ExamPartResult.ExamPart.ExamPartId}?f=live")">
 						#@exam.ExamPartResult.ExamPart.ExamPartId
 					</a>
+					<sup>
+						@exam.ExamPartResult.Questions.Where(x => x.QuestionOnTwitter != null).Count() / @exam.ExamPartResult.Questions.Count
+					</sup>
 				</p>
 			</li>
 		}
