@@ -10,7 +10,8 @@
 
 過去問題を閲覧する静的サイトのジェネレータ。
 
-https://www.statiq.dev/ を用いている。
+生成には https://www.statiq.dev/ を用いている。
+スタイルは https://andybrewer.github.io/mvp/ に当ててもらっている。
 
 https://7474.github.io/JITECKakomon/
 
