@@ -1,0 +1,46 @@
+{
+  "Items": [
+    {
+      "ExamId": "2022r04h_ap",
+      "ExamPartId": "2022r04h_ap_am_qs",
+      "ExamRefName": "令和4年度 春期 応用情報技術者試験 午前 問題",
+      "QuestionFileUri": "https://www.jitec.ipa.go.jp/1_04hanni_sukiru/mondai_kaitou_2022r04_1/2022r04h_ap_am_qs.pdf"
+    },
+    {
+      "ExamId": "2022r04h_koudo",
+      "ExamPartId": "2022r04h_koudo_am1_qs",
+      "ExamRefName": "令和4年度 春期 高度試験 午前I 問題【共通】",
+      "QuestionFileUri": "https://www.jitec.ipa.go.jp/1_04hanni_sukiru/mondai_kaitou_2022r04_1/2022r04h_koudo_am1_qs.pdf"
+    },
+    {
+      "ExamId": "2022r04h_pm",
+      "ExamPartId": "2022r04h_st_am2_qs",
+      "ExamRefName": "令和4年度 春期 ITストラテジスト試験 午前II 問題",
+      "QuestionFileUri": "https://www.jitec.ipa.go.jp/1_04hanni_sukiru/mondai_kaitou_2022r04_1/2022r04h_st_am2_qs.pdf"
+    },
+    {
+      "ExamId": "2022r04h_db",
+      "ExamPartId": "2022r04h_sa_am2_qs",
+      "ExamRefName": "令和4年度 春期 システムアーキテクト試験 午前II 問題",
+      "QuestionFileUri": "https://www.jitec.ipa.go.jp/1_04hanni_sukiru/mondai_kaitou_2022r04_1/2022r04h_sa_am2_qs.pdf"
+    },
+    {
+      "ExamId": "2022r04h_es",
+      "ExamPartId": "2022r04h_nw_am2_qs",
+      "ExamRefName": "令和4年度 春期 ネットワークスペシャリスト試験 午前II 問題",
+      "QuestionFileUri": "https://www.jitec.ipa.go.jp/1_04hanni_sukiru/mondai_kaitou_2022r04_1/2022r04h_nw_am2_qs.pdf"
+    },
+    {
+      "ExamId": "2022r04h_au",
+      "ExamPartId": "2022r04h_sm_am2_qs",
+      "ExamRefName": "令和4年度 春期 ITサービスマネージャ試験 午前II 問題",
+      "QuestionFileUri": "https://www.jitec.ipa.go.jp/1_04hanni_sukiru/mondai_kaitou_2022r04_1/2022r04h_sm_am2_qs.pdf"
+    },
+    {
+      "ExamId": "2022r04h_sc",
+      "ExamPartId": "2022r04h_sc_am2_qs",
+      "ExamRefName": "令和4年度 春期 情報処理安全確保支援士試験 午前II 問題",
+      "QuestionFileUri": "https://www.jitec.ipa.go.jp/1_04hanni_sukiru/mondai_kaitou_2022r04_1/2022r04h_sc_am2_qs.pdf"
+    }
+  ]
+}

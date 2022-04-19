@@ -27,6 +27,9 @@
     <None Update="Font\ipaexg.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Input\2022r04h.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Input\2021r03a.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
