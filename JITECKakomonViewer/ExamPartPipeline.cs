@@ -11,7 +11,7 @@ namespace JITECKakomonViewer
         {
             InputModules = new ModuleList
             {
-                new ReadExamParts(new NormalizedPath("input/2021r03a.json"), repository)
+                new ReadExamParts(new NormalizedPath("input/exam-part-index.json"), repository)
             };
 
             ProcessModules = new ModuleList
